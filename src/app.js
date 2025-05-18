@@ -9,8 +9,10 @@ app.use(cors({
     credentials : true
 }))
 
+//Data will come from many sources so we need to prepare
+
 app.use(express.json({
-    limit : "16kb"
+    limit : "16kb" // set the data limit to be recieved    
 }))
 app.use(express.urlencoded({
     extended : true,

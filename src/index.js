@@ -1,6 +1,9 @@
 import mongoose from "mongoose";
 import connectDB from "./db/index.js";
 import dotenv from "dotenv"
+import express from "express";
+
+const app = express();
 
 connectDB()
 .then(()=>{
@@ -15,6 +18,9 @@ connectDB()
 .catch((error)=>{
     console.log("MongoDB connection Failed !!! ",error)
 })
+
+dotenv.config({path : './env'});
+
 
 
 /* One more way to connect database 
@@ -42,7 +48,6 @@ const app = express()
     })()*/
 // require('dotenv').config({path : './env'})
 
-dotenv.config({path : './env'});
 
 
 
