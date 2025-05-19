@@ -2,8 +2,7 @@ import mongoose from "mongoose";
 import connectDB from "./db/index.js";
 import dotenv from "dotenv"
 import express from "express";
-
-const app = express();
+import { app } from "./app.js";
 
 connectDB()
 .then(()=>{
