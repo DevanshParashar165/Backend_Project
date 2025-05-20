@@ -1,5 +1,3 @@
-import req from "express/lib/request";
-import { type } from "express/lib/response";
 import jsonwebtoken from "jsonwebtoken";
 import mongoose,{Schema} from "mongoose";
 import bcrypt from 'bcrypt';
@@ -86,4 +84,4 @@ userSchema.methods.generateRefreshToken = function(){
 )
 }
 
-export const user = mongoose.model("User",userSchema)
+export const User = mongoose.model("User",userSchema)
