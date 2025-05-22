@@ -3,7 +3,7 @@ import { response } from 'express';
 import fs from "fs";
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_API_CLOUD_NAME, 
-    api_key: process.env.CLOUDINARY_API_SECRET, 
+    api_key: process.env.CLOUDINARY_API_KEY, 
     api_secret: process.env.CLOUDINARY_API_SECRET
 })
 
@@ -19,10 +19,12 @@ const uploadOnCloudinary = async (localFilePath) => {
            }
        )
        // File has been uploaded successfully
-       console.log("File has been uploaded on cloudinary",uploadResult.url);
+    //    console.log("File has been uploaded on cloudinary",uploadResult.url);
+       fs.unlinkSync(localFilePath)
        return uploadResult;
     } catch (error) {
-        fs.unlinkSync(localFilePath)//remove the locally saved temporary file as the upload o[ption get failed
+        console.error(" Cloudinary upload failed:", error.message);
+        fs.unlinkSync(localFilePath)//remove the locally saved temporary file as the upload option get failed
         return null;
     }
     

@@ -18,7 +18,7 @@ connectDB()
     console.log("MongoDB connection Failed !!! ",error)
 })
 
-dotenv.config({path : './env'});
+dotenv.config({path : './.env'});
 
 
 
