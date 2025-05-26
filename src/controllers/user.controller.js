@@ -15,7 +15,7 @@ const generateAccessAndRefreshTokens = async (userId) => {
         await user.save({ validateBeforeSave: false })
         return { accessToken, refreshToken }
     } catch (error) {
-        throw new ApiError(500, `Something ent wrong while generating refresh and access token, Error : ${error.message}`)
+        throw new ApiError(500, `Something went wrong while generating refresh and access token, Error : ${error.message}`)
     }
 }
 
@@ -145,7 +145,7 @@ const logoutUser = asyncHandler(async(req,res)=>{
     )
 })
 
-const refreshAccessToken = asyncHandler(async(res,req)=>{
+const refreshAccessToken = asyncHandler(async(req,res)=>{
    try {
      const incomingRefreshToken = req.cookies.refreshToken ||req.body.refreshToken
      if(!incomingRefreshToken){
@@ -158,10 +158,10 @@ const refreshAccessToken = asyncHandler(async(res,req)=>{
      console.log(user);
  
      if(!user){
-         throw ApiError(401,"Invalid refreshToken")
+         throw new ApiError(401,"Invalid refreshToken")
      }
      if(incomingRefreshToken !== user?.refreshToken){
-         throw ApiError(401,"Refresh Token is expired or used")
+         throw new ApiError(401,"Refresh Token is expired or used")
      }
  
      const options = {
@@ -169,10 +169,10 @@ const refreshAccessToken = asyncHandler(async(res,req)=>{
          secure : true
      }
      
-     const {accessToken,newRefreshToken} = await generateAccessAndRefreshTokens(user._id)
+     const {accessToken,refreshToken} = await generateAccessAndRefreshTokens(user._id)
  
-     return res.status(200).cookie("accessToken",accessToken,options).cookie("newRefreshToken",newRefreshToken,options).json(
-         new ApiResponse(200,{accessToken,newRefreshToken},"Access Token refreshed Successfully !!!!")
+     return res.status(200).cookie("accessToken",accessToken,options).cookie("RefreshToken",refreshToken,options).json(
+         new ApiResponse(200,{accessToken,refreshToken},"Access Token refreshed Successfully !!!!")
      )
    } catch (error) {
     throw new ApiError(401,error?.message || "Invalid Refresh Token")
@@ -198,7 +198,7 @@ const getCurrentUser = asyncHandler(async(req,res)=>{
 })
 
 const updateAccountDetails = asyncHandler(async(req,res)=>{
-    const {fullname,username} = req.body
+    const {fullname,email} = req.body
     if(!fullname || !email){
         throw new ApiError(400,"All fields are required")
     }
@@ -212,20 +212,23 @@ const updateAccountDetails = asyncHandler(async(req,res)=>{
         },
         {new : true}
      ).select("-password")
-     return res.staus(200)
+     return res.status(200)
      .json(new ApiResponse(200,user,"Account details updated successfully!!!"))
 })
 
 const updateUserAvatar = asyncHandler(async(req,res)=>{
-    const avatalLocalPath = req.file?.path
-    if(!avatalLocalPath){
+    const avatarLocalPath = req.file?.path
+    if(!avatarLocalPath){
         throw new ApiError(400,"Avatar file is missing");
     }
-    const avatar = await uploadOnCloudinary(avatalLocalPath)
+    
+    //TODO : Delete old images
+    
+    const avatar = await uploadOnCloudinary(avatarLocalPath)
     if(!avatar.url){
         throw new ApiError(400,"Error while uploading avatar")
     }
-    const user = User.findByIdAndUpdate(
+    const user = await User.findByIdAndUpdate(
         req.user?._id,
         {
             $set : {avatar : avatar.url}
@@ -234,7 +237,7 @@ const updateUserAvatar = asyncHandler(async(req,res)=>{
             new : true
         }
     ).select("-password")
-    return res.staus(200)
+    return res.status(200)
     .json(new ApiResponse(200,user,"Avatar updated successfully!!!"))
 })
 
@@ -247,7 +250,8 @@ const updateCoverImage = asyncHandler(async(req,res)=>{
     if(!coverImage.url){
         throw new ApiError(400,"Error while uploading cover Image")
     }
-    const user = User.findByIdAndUpdate(
+    //TODO : delete old images 
+    const user = await User.findByIdAndUpdate(
         req.user?._id,
         {
             $set : {coverImage : coverImage.url}
@@ -256,8 +260,73 @@ const updateCoverImage = asyncHandler(async(req,res)=>{
             new : true
         }
     ).select("-password")
-    return res.staus(200)
+    return res.status(200)
     .json(new ApiResponse(200,user,"Cover Image updated successfully!!!"))
 })
 
-export { registerUser, loginUser,logoutUser,changeCurrentPassword,getCurrentUser,updateAccountDetails,refreshAccessToken,updateCoverImage,updateUserAvatar}
+const getUserChannelProfile = asyncHandler(async(req,res)=>{
+    const {username} =  req.params
+    if(!username?.trim()){
+        throw new ApiError(400,"Username is Missing")
+    }
+    const channel = await User.aggregate([
+        {
+            $match : {
+                username : username?.toLowerCase()
+            }
+        },
+        {
+             $lookup : {
+            from : "subscriptions",
+            localField : "_id",
+            foreignField : "channel",
+            as : "subscribers"
+        }
+        },{
+            $lookup : {
+            from : "subscriptions",
+            localField : "_id",
+            foreignField : "subscriber",
+            as : "subscribedTo"
+            }
+        },{
+            $addFields : {
+                subscribersCount : {
+                    $size : "$subscribers"
+                },
+                channelsSubscribedToCount : {
+                    $size : "$subscribedTo"
+                },
+                isSubscribed : {
+                    $condition : {
+                        if : {$in : [req.user?._id,"$subscribers.subscriber"]},
+                        then : true,
+                        else : false
+                    }
+                }
+            }
+        },{
+            $project : {
+                fullname : 1,
+                username : 1,
+                subscribersCount : 1,
+                channelsSubscribedToCount : 1,
+                isSubscribed : 1,
+                avatar : 1,
+                coverImage : 1,
+                email : 1
+            }
+        }
+    ])
+    if(!channel?.length){
+        throw new ApiError(404,"Channel does not exist!!!")
+    }
+    console.log(channel)
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(200,channel[0],"User Channel fetched successfully!!!")
+    )
+})
+
+export { registerUser, loginUser,logoutUser,changeCurrentPassword,getCurrentUser,updateAccountDetails,refreshAccessToken,updateCoverImage,updateUserAvatar,getUserChannelProfile}
