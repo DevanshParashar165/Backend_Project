@@ -1,7 +1,7 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/apiError.js";
 import { User } from "../models/user.model.js";
-import { uploadOnCloudinary } from "../utils/cloudnary.js";
+import { uploadOnCloudinary, deleteFromCloudinary } from "../utils/cloudnary.js";
 import { ApiResponse } from "../utils/apiResponse.js";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
@@ -223,13 +223,16 @@ const updateUserAvatar = asyncHandler(async(req,res)=>{
         throw new ApiError(400,"Avatar file is missing");
     }
     
-    //TODO : Delete old images
+    const user = await User.findById(req.user?._id)
+    if(user.avatar){
+        await deleteFromCloudinary(user.avatar)
+    }
     
     const avatar = await uploadOnCloudinary(avatarLocalPath)
     if(!avatar.url){
         throw new ApiError(400,"Error while uploading avatar")
     }
-    const user = await User.findByIdAndUpdate(
+    const updatedUser = await User.findByIdAndUpdate(
         req.user?._id,
         {
             $set : {avatar : avatar.url}
@@ -239,7 +242,7 @@ const updateUserAvatar = asyncHandler(async(req,res)=>{
         }
     ).select("-password")
     return res.status(200)
-    .json(new ApiResponse(200,user,"Avatar updated successfully!!!"))
+    .json(new ApiResponse(200,updatedUser,"Avatar updated successfully!!!"))
 })
 
 const updateCoverImage = asyncHandler(async(req,res)=>{
@@ -247,12 +250,18 @@ const updateCoverImage = asyncHandler(async(req,res)=>{
     if(!coverImageLocalPath){
         throw new ApiError(400,"Cover Image file is missing");
     }
+
+    const user = await User.findById(req.user?._id)
+    if(user.coverImage){
+        await deleteFromCloudinary(user.coverImage)
+    }
+
     const coverImage = await uploadOnCloudinary(coverImageLocalPath)
     if(!coverImage.url){
         throw new ApiError(400,"Error while uploading cover Image")
     }
     //TODO : delete old images 
-    const user = await User.findByIdAndUpdate(
+    const updatedUser = await User.findByIdAndUpdate(
         req.user?._id,
         {
             $set : {coverImage : coverImage.url}
@@ -262,7 +271,7 @@ const updateCoverImage = asyncHandler(async(req,res)=>{
         }
     ).select("-password")
     return res.status(200)
-    .json(new ApiResponse(200,user,"Cover Image updated successfully!!!"))
+    .json(new ApiResponse(200,updatedUser,"Cover Image updated successfully!!!"))
 })
 
 const getUserChannelProfile = asyncHandler(async(req,res)=>{
@@ -331,7 +340,7 @@ const getUserChannelProfile = asyncHandler(async(req,res)=>{
 })
 
 const getWatchHistory = asyncHandler(async(req,res)=>{
-     const user = await User.aggeregate([
+     const user = await User.aggregate([
         {
             $match : {
                 _id : new mongoose.Types.ObjectId(req.user._id)
