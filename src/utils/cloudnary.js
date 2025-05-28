@@ -30,7 +30,7 @@ const uploadOnCloudinary = async (localFilePath) => {
     
 }
 
-export const deleteFromCloudinary = async (url) => {
+const deleteFromCloudinary = async (url) => {
     const publicId = url.split('/').pop().split('.')[0];
     return await cloudinary.uploader.destroy(publicId);
 };
