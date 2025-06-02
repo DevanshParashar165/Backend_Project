@@ -4,12 +4,10 @@ const tweetSchema = new Schema({
     owner : {
         type : Schema.Types.ObjectId,
         ref : "User",
-        required : true,
-        unique: true,
-        trim: true
     },
     content : {
-        type : String
+        type : String,
+        required : true
     }
 },{timestamps : true})
 
