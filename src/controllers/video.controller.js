@@ -23,6 +23,10 @@ const getAllVideos = asyncHandler(async (req, res) => {
         ]
     }
 
+    if (userId) {
+    filters.owner = userId;
+}
+
     const sortOptions = {};
 
     sortOptions[sortBy] = sortType === 'asc'?1:-1;

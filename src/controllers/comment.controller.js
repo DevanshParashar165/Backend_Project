@@ -7,8 +7,39 @@ import {asyncHandler} from "../utils/asyncHandler.js"
 const getVideoComments = asyncHandler(async (req, res) => {
     //TODO: get all comments for a video
     const {videoId} = req.params
-    const {page = 1, limit = 10} = req.query
+    const {page = 1, limit = 10,query} = req.query
+    if(!videoId){
+        throw new ApiError(400,"Video Id not found")
+    }
+    if(!mongoose.Types.ObjectId.isValid(videoId)){
+        throw new ApiError(400,"Invalid Video Id")
+    }
+    const filters = {}
+     if (query) {
+        filters.$or = [
+            { content: { $regex: query, $options: 'i' } }
+        ];
+    }
 
+    filters.video = videoId
+
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    const comment = await Comment.find(filters)
+                                 .skip(skip)
+                                 .limit(parseInt(limit));
+
+    const total = await Comment.countDocuments(filters);
+        
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(200,{total,
+            page: parseInt(page),
+            limit: parseInt(limit),
+            comment},
+        "Comment fetched Successfully")
+         );                             
 })
 
 const addComment = asyncHandler(async (req, res) => {
