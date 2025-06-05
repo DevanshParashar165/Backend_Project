@@ -12,9 +12,36 @@ import fs from "fs";
 
 
 const getAllVideos = asyncHandler(async (req, res) => {
-    const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query
-    
+    const { page = 1, limit = 10, query, sortBy="createdAt", sortType="desc", userId } = req.query
 
+    const filters = {};
+
+    if(query){
+        filters.$or = [
+            {title : {$regex : query , $options : 'i'}},
+            {description :{$regex : query , $options : 'i'} }
+        ]
+    }
+
+    const sortOptions = {};
+
+    sortOptions[sortBy] = sortType === 'asc'?1:-1;
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    const videos = await Video.find(filters)
+        .sort(sortOptions)
+        .skip(skip)
+        .limit(parseInt(limit));
+
+    const total = await Video.countDocuments(filters);
+    
+     return res.status(200).json(
+        new ApiResponse(200,{total,
+        page: parseInt(page),
+        limit: parseInt(limit),
+        videos},
+    "Videos fetched Successfully")
+     );
     //TODO: get all videos based on query, sort, pagination
 })
 

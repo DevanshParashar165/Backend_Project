@@ -22,8 +22,7 @@ const createTweet = asyncHandler(async (req, res) => {
     return res
     .status(200)
     .json(
-        200,
-        ApiResponse(200,tweet,"Tweet Created Successfully")
+       new ApiResponse(200,tweet,"Tweet Created Successfully")
     )
     //TODO: create tweet
 })
@@ -37,6 +36,21 @@ const getUserTweets = asyncHandler(async (req, res) => {
     if(!mongoose.Types.ObjectId.isValid(userId)){
         throw new ApiError(200,"Invalid User Id ")
     }
+    
+    const tweets = await Tweet.find({owner : userId})
+                              .sort({createdAt : 1})
+                              .populate("owner", "username avatar") 
+                              .lean();
+
+    if(!tweets||tweets.length===0){
+        return res.status(404).json(
+            new ApiResponse(404,tweets,"No tweet found from the user")
+        );
+    }   
+    return res
+    .json(
+        new ApiResponse(200,tweets,"Tweets fetched successfully!!!")
+    )                       
 })
 
 const updateTweet = asyncHandler(async (req, res) => {
