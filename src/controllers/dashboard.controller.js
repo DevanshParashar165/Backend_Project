@@ -8,6 +8,38 @@ import {asyncHandler} from "../utils/asyncHandler.js"
 
 const getChannelStats = asyncHandler(async (req, res) => {
     const user = req.user?._id
+
+    const subscribers = await Subscription.countDocuments({
+        channel : user
+    })
+
+    const videos = await Video.countDocuments({
+        owner : user
+    })
+
+    const likes = await Like.countDocuments({
+        video : user
+    })
+
+    const result = Video.aggregate([
+        {
+            $match : {owner : user}
+        },
+        {
+            $group : {
+                _id : null,
+                totalViews : {$sum : "$views"}
+            }
+        }
+    ])
+
+    const totalViews = result[0]?.totalViews || 0;
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(200,{videos,subscribers,likes,totalViews},"Dashboard Data Fetched Successfully!!!")
+    )
     // TODO: Get the channel stats like total video views, total subscribers, total videos, total likes etc.
 })
 
