@@ -51,8 +51,8 @@ const getAllVideos = asyncHandler(async (req, res) => {
 
 const publishAVideo = asyncHandler(async (req, res) => {
     console.log("publishAVideo route hit");
-    console.log("req.files:", req.files);
-    console.log("req.body:", req.body);
+    // console.log("req.files:", req.files);
+    // console.log("req.body:", req.body);
 
     let { title, description } = req.body;
 

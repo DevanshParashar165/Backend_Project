@@ -62,7 +62,10 @@ const registerUser = asyncHandler(async (req, res) => {
     //create user object-create entry in db
     const user = await User.create({
         fullname,
-        avatar: avatar.url,
+        avatar: {
+            public_id: avatar.public_id,
+            url: avatar.url
+        },
         coverImage: coverImage?.url || "",
         email,
         password,
@@ -118,6 +121,7 @@ const loginUser = asyncHandler(async (req, res) => {
     return res.status(200)
     .cookie("accessToken",accessToken,options)
     .cookie("refreshToken",refreshToken,options)
+    .cookie("username",loggedInUser.username)
     .json(
         new ApiResponse(200,{
             user : loggedInUser,

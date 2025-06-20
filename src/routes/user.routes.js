@@ -17,7 +17,7 @@ userRouter.route("/register").post(
         }
     ]),
     registerUser)
-userRouter.route("/login").post(loginUser)
+userRouter.route("/login").post(upload.none(),loginUser)
 
 userRouter.route("/logout").post(verifyJWT,logoutUser)
 

@@ -4,6 +4,7 @@ import {User} from "../models/user.model.js"
 import {ApiError} from "../utils/apiError.js"
 import {ApiResponse} from "../utils/apiResponse.js"
 import {asyncHandler} from "../utils/asyncHandler.js"
+import { populate } from "dotenv"
 
 const createTweet = asyncHandler(async (req, res) => {
     const owner = req.user?._id;
@@ -91,9 +92,26 @@ const deleteTweet = asyncHandler(async (req, res) => {
     //TODO: delete tweet
 })
 
+const getAllTweet = asyncHandler(async(req,res)=>{
+    const tweets = await Tweet.find()
+                              .populate({ path: 'owner', select: 'username avatar' })
+                              .sort({ createdAt: -1 });
+
+    if(!tweets){
+        throw new ApiError(400,"Tweets not Found")
+    }
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(200,tweets,"Tweets fetched Successfully!!!")
+    )
+})
+
 export {
     createTweet,
     getUserTweets,
     updateTweet,
-    deleteTweet
+    deleteTweet,
+    getAllTweet
 }
