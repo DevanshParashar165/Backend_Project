@@ -21,7 +21,7 @@ const getChannelStats = asyncHandler(async (req, res) => {
         video : user
     })
 
-    const result = Video.aggregate([
+    const result = await Video.aggregate([
         {
             $match : {owner : user}
         },

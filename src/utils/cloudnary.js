@@ -24,7 +24,9 @@ const uploadOnCloudinary = async (localFilePath) => {
 
        // File has been uploaded successfully
     //    console.log("File has been uploaded on cloudinary",uploadResult.url);
-       fs.unlinkSync(localFilePath)
+         if (fs.existsSync(localFilePath)) {
+            fs.unlinkSync(localFilePath);
+        }
        return {
             public_id: uploadResult.public_id,
             url: uploadResult.secure_url
@@ -38,9 +40,15 @@ const uploadOnCloudinary = async (localFilePath) => {
 }
 
 const deleteFromCloudinary = async (url) => {
-    const publicId = url.split('/').pop().split('.')[0];
-    return await cloudinary.uploader.destroy(publicId);
+  if (typeof url !== 'string') {
+    console.error("Invalid URL:", url);
+    return;
+  }
+
+  const publicId = url.split('/').pop().split('.')[0];
+  return await cloudinary.uploader.destroy(publicId);
 };
+
 
 
 export {uploadOnCloudinary,deleteFromCloudinary}

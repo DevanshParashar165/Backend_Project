@@ -66,19 +66,32 @@ const registerUser = asyncHandler(async (req, res) => {
             public_id: avatar.public_id,
             url: avatar.url
         },
-        coverImage: coverImage?.url || "",
+        coverImage: {
+            public_id: coverImage.public_id,
+            url: coverImage.url
+        },
         email,
         password,
         username: username.toLowerCase()
     })
     //remove passord and refresh token field from response
     const createdUser = await User.findById(user._id).select("-password -refreshToken")
+    const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(createdUser._id);
     //check for user creation
     if (!createdUser) {
         throw new ApiError(500, "Something went wrong while registering user")
     }
+
+    const options = {
+        httpOnly : true,
+        secure : true
+    }
+
     //return response
-    return res.status(201).json(
+    return res.status(201)
+              .cookie("accessToken",accessToken,options)
+              .cookie("refreshToken",refreshToken,options)
+              .json(
         new ApiResponse(200, createdUser, "User registered Succesfully")
     )
 })
@@ -145,6 +158,7 @@ const logoutUser = asyncHandler(async(req,res)=>{
     return res.status(200)
     .clearCookie("accessToken",options)
     .clearCookie("refreshToken",options)
+    .clearCookie("username")
     .json(
         new ApiResponse(200,{},"User logged Out")
     )
