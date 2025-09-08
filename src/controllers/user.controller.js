@@ -89,6 +89,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
     //return response
     return res.status(201)
+              .cookie("username",username)
               .cookie("accessToken",accessToken,options)
               .cookie("refreshToken",refreshToken,options)
               .json(
