@@ -89,7 +89,6 @@ const registerUser = asyncHandler(async (req, res) => {
 
     //return response
     return res.status(201)
-              .cookie("username",username)
               .cookie("accessToken",accessToken,options)
               .cookie("refreshToken",refreshToken,options)
               .json(
@@ -135,7 +134,6 @@ const loginUser = asyncHandler(async (req, res) => {
     return res.status(200)
     .cookie("accessToken",accessToken,options)
     .cookie("refreshToken",refreshToken,options)
-    .cookie("username",loggedInUser.username)
     .json(
         new ApiResponse(200,{
             user : loggedInUser,
@@ -294,7 +292,7 @@ const updateCoverImage = asyncHandler(async(req,res)=>{
 })
 
 const getUserChannelProfile = asyncHandler(async(req,res)=>{
-    const {username} =  req.params
+    const username =  req.user?.username
     if(!username?.trim()){
         throw new ApiError(400,"Username is Missing")
     }
