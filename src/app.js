@@ -55,6 +55,14 @@ app.use("/api/v1/likes", likeRouter)
 app.use("/api/v1/playlist", playlistRouter)
 app.use("/api/v1/dashboard", dashboardRouter)
 
+app.use((err, req, res, next) => {
+  console.error(err.stack); // prints error in Render logs
+  res.status(err.status || 500).json({
+    success: false,
+    message: err.message || "Internal Server Error",
+  });
+});
+
 // http://localhost:8000/api/v1/users/register
 
 export { app }
