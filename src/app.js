@@ -6,7 +6,7 @@ const app = express()
 
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://devconnect.onrender.com"
+  "https://devconnect-nyfy.onrender.com/"
 ];
 
 app.use(
