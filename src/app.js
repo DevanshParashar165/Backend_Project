@@ -6,7 +6,7 @@ const app = express()
 
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://project-frontend-beige.vercel.app"
+  "https://devconnect.onrender.com"
 ];
 
 app.use(
