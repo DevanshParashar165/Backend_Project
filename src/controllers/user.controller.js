@@ -50,6 +50,9 @@ const registerUser = asyncHandler(async (req, res) => {
     if (!avatarLocalPath) {
         throw new ApiError(400, "Avatar file is required")
     }
+    if(!coverImageLocalPath){
+        throw new ApiError(400,"Cover Image is required")
+    }
 
     //Upload them to cloudinary,avatar
     console.log("req.body:", req.body);
@@ -88,11 +91,11 @@ const registerUser = asyncHandler(async (req, res) => {
     }
 
     //return response
-    return res.status(201)
+    return res.status(200)
               .cookie("accessToken",accessToken,options)
               .cookie("refreshToken",refreshToken,options)
               .json(
-        new ApiResponse(200, createdUser, "User registered Succesfully")
+        new ApiResponse(200, createdUser, "User registered Successfully")
     )
 })
 
