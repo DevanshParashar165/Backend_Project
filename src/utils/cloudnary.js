@@ -19,6 +19,7 @@ const uploadOnCloudinary = async (localFilePath) => {
                resource_type : 'auto'
            }
        )
+       console.log("Cloudinary Upload result : ",uploadResult)
        console.log("Received localFilePath:", localFilePath);
        console.log("Resolved absolute path:", path.resolve(localFilePath));
 
