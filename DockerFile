@@ -1,0 +1,32 @@
+# ---------- Stage 1: Build ----------
+FROM node:18-alpine AS builder
+
+# Set working directory inside container
+WORKDIR /app
+
+# Copy package files first for better layer caching
+COPY package*.json ./
+
+# Install only production dependencies first (for caching)
+RUN npm ci --only=production
+
+# Copy rest of the source code
+COPY . .
+
+# ---------- Stage 2: Run ----------
+FROM node:18-alpine
+
+# Create app directory
+WORKDIR /app
+
+# Copy only the necessary files from builder stage
+COPY --from=builder /app /app
+
+# Expose the backend port (usually 5000 or 8080)
+EXPOSE 5000
+
+# Set environment variable
+ENV NODE_ENV=production
+
+# Start the server
+CMD ["node", "src/server.js"]

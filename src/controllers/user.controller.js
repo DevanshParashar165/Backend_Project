@@ -130,10 +130,12 @@ const loginUser = asyncHandler(async (req, res) => {
 
     //send cookies
 
+    const isProduction = process.env.NODE_ENV === "production"
+
     const options = {
         httpOnly : true,
-        secure : true,
-        sameSite : "None",
+        secure : isProduction,
+        sameSite : isProduction ? "None" : "Lax",
         maxAge: 7 * 24 * 60 * 60 * 1000
     }
 

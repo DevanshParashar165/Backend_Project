@@ -89,6 +89,7 @@ const publishAVideo = asyncHandler(async (req, res) => {
     // Upload to Cloudinary
     const videoFile = await uploadOnCloudinary(absoluteVideoPath);
     const thumbnailFile = await uploadOnCloudinary(absoluteThumbnailPath);
+    
 
     if (!videoFile || !thumbnailFile) {
         throw new ApiError(500, "Cloudinary upload failed");

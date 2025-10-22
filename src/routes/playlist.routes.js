@@ -26,6 +26,6 @@ playlistRouter
 playlistRouter.route("/add/:videoId/:playlistId").patch(addVideoToPlaylist);
 playlistRouter.route("/remove/:videoId/:playlistId").patch(removeVideoFromPlaylist);
 
-playlistRouter.route("/user/:userId").get(getUserPlaylists);
+playlistRouter.route("/").get(getUserPlaylists);
 
 export default playlistRouter
