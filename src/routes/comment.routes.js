@@ -1,18 +1,24 @@
-import { Router } from 'express';
-import { upload } from '../middlewares/multer.middleware.js';
-import {
-    addComment,
-    deleteComment,
-    getVideoComments,
-    updateComment,
-} from "../controllers/comment.controller.js"
-import {verifyJWT} from "../middlewares/auth.middleware.js"
+import { Router } from "express";
+import { 
+    getPostComments, addComment, updateComment, 
+    deleteComment, toggleLikeComment, togglePinComment 
+} from "../controllers/comment.controller.js";
+import { verifyJWT } from "../middlewares/auth.middleware.js";
+import { validate } from "../middlewares/validation.middleware.js";
+import { commentSchema } from "../utils/validationSchemas.js";
 
-const commentRouter = Router();
+const router = Router();
 
-commentRouter.use(verifyJWT); // Apply verifyJWT middleware to all routes in this file
+router.route("/post/:postId")
+    .get(verifyJWT, getPostComments)
+    .post(verifyJWT, validate(commentSchema), addComment);
 
-commentRouter.route("/:videoId").get(getVideoComments).post(upload.none(),addComment);
-commentRouter.route("/c/:commentId").delete(deleteComment).patch(upload.none(),updateComment);
+router.route("/:commentId")
+    .patch(verifyJWT, updateComment)
+    .delete(verifyJWT, deleteComment);
 
-export default commentRouter
+router.post("/:commentId/like", verifyJWT, toggleLikeComment);
+
+router.post("/:commentId/pin", verifyJWT, togglePinComment);
+
+export default router;

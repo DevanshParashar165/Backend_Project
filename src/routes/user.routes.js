@@ -1,40 +1,34 @@
 import { Router } from "express";
-import { loginUser, logoutUser, registerUser,refreshAccessToken, changeCurrentPassword, getCurrentUser, updateAccountDetails, updateUserAvatar, updateCoverImage, getUserChannelProfile, getWatchHistory } from "../controllers/user.controller.js";
-import { upload } from "../middlewares/multer.middleware.js";
+import { 
+    getProfile, updateProfile, addTimelineItem, deleteTimelineItem, 
+    getSuggestions, getAnalytics, getGitHubRepos, updateAvatar, 
+    updateCoverImage, uploadResume 
+} from "../controllers/user.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
+import { upload } from "../middlewares/multer.middleware.js";
+import { validate } from "../middlewares/validation.middleware.js";
+import { updateProfileSchema } from "../utils/validationSchemas.js";
 
-const userRouter = Router()
+const router = Router();
 
-userRouter.route("/register").post(
-    upload.fields([
-        {
-            name : "avatar",
-            maxCount : 1
-        },
-        {
-            name : "coverImage",
-            maxCount : 1
-        }
-    ]),
-    registerUser)
-userRouter.route("/login").post(upload.none(),loginUser)
+router.get("/profile/:username", verifyJWT, getProfile);
 
-userRouter.route("/logout").post(verifyJWT,logoutUser)
+router.patch("/profile", verifyJWT, validate(updateProfileSchema), updateProfile);
 
-userRouter.route("/refresh-Token").post(refreshAccessToken)
+router.post("/profile/timeline/:type", verifyJWT, addTimelineItem);
 
-userRouter.route("/change-password").post(verifyJWT,changeCurrentPassword)
+router.delete("/profile/timeline/:type/:itemId", verifyJWT, deleteTimelineItem);
 
-userRouter.route("/current-user").get(verifyJWT,getCurrentUser)
+router.get("/suggestions", verifyJWT, getSuggestions);
 
-userRouter.route("/update-account").patch(verifyJWT,updateAccountDetails)
+router.get("/analytics", verifyJWT, getAnalytics);
 
-userRouter.route("/avatar").patch(verifyJWT,upload.single("avatar"),updateUserAvatar)
+router.get("/github/:username", verifyJWT, getGitHubRepos);
 
-userRouter.route("/cover-image").patch(verifyJWT,upload.single("coverImage"),updateCoverImage)
+router.patch("/avatar", verifyJWT, upload.single("avatar"), updateAvatar);
 
-userRouter.route("/channel").get(verifyJWT,getUserChannelProfile)
+router.patch("/cover-image", verifyJWT, upload.single("coverImage"), updateCoverImage);
 
-userRouter.route("/history").get(verifyJWT,getWatchHistory)
+router.patch("/resume", verifyJWT, upload.single("resume"), uploadResume);
 
-export default userRouter;
+export default router;

@@ -6,14 +6,37 @@ const commentSchema = new Schema({
         type: String,
         required: true
     },
-    video: {
+    post: {
         type: Schema.Types.ObjectId,
-        ref: "Video"
+        ref: "Post",
+        required: true
     },
     owner: {
         type: Schema.Types.ObjectId,
-        ref: "User"
-    }
+        ref: "User",
+        required: true
+    },
+    parentComment: {
+        type: Schema.Types.ObjectId,
+        ref: "Comment",
+        default: null
+    },
+    likes: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: "User"
+        }
+    ],
+    isPinned: {
+        type: Boolean,
+        default: false
+    },
+    mentions: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: "User"
+        }
+    ]
 }, { timestamps: true })
 
 commentSchema.plugin(mongooseAggregatePaginate)
