@@ -25,9 +25,16 @@ const register = asyncHandler(async (req, res) => {
 
     // Upload files to Cloudinary
     const avatar = await uploadOnCloudinary(avatarLocalPath);
+    if (!avatar) {
+        throw new ApiError(502, "Avatar image upload failed. Please try again.");
+    }
+
     let coverImage = null;
     if (coverImageLocalPath) {
         coverImage = await uploadOnCloudinary(coverImageLocalPath);
+        if (!coverImage) {
+            throw new ApiError(502, "Cover image upload failed. Please try again.");
+        }
     }
 
     const createdUser = await AuthService.registerUser({

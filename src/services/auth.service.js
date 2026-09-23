@@ -12,7 +12,7 @@ const hashToken = (token) => {
 };
 
 class AuthService {
-    static async registerUser({ username, email, fullname, password, avatar }) {
+    static async registerUser({ username, email, fullname, password, avatar, coverImage }) {
         // Validate duplicates
         const existedUser = await User.findOne({
             $or: [{ username }, { email }]
@@ -33,6 +33,7 @@ class AuthService {
             fullname,
             password,
             avatar,
+            coverImage,
             isEmailVerified: false,
             emailVerifyToken,
             emailVerifyTokenExpiry
